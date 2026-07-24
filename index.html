@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meti Quality Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ============================================================
+   TOKENS — derived from the Meti mark (deep navy + electric blue gradient)
+   ============================================================ */
+:root{
+  --ink:        #0A0E18;
+  --panel:      #131A2B;
+  --panel-2:    #19233A;
+  --line:       #262F49;
+  --text:       #E8EBF5;
+  --text-mute:  #7C87A3;
+  --blue-1:     #59A6FF;
+  --blue-2:     #2554F0;
+  --good:       #34D399;
+  --avg:        #FBBF24;
+  --poor:       #F87171;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Inter', sans-serif;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SIGNATURE: two soft diagonal gradient blades, echoing the mark
+   ============================================================ */
+.blade-field{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blade-field::before, .blade-field::after{
+  content: '';
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.16;
+}
+
+.blade-field::before{
+  top: -20vw; left: -15vw;
+  background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+}
+
+.blade-field::after{
+  bottom: -25vw; right: -20vw;
+  background: linear-gradient(135deg, var(--blue-2), var(--blue-1));
+  opacity: 0.10;
+}
+
+.wrap{
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+  animation: fadeUp 0.6s ease-out;
+}
+
+@keyframes fadeUp{
+  from{ opacity:0; transform: translateY(10px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+/* ============================================================
+   HEADER / LOGO
+   ============================================================ */
+.console-header{
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 32px 36px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-row{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.brand-row img{
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.brand-name{
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
+}
+
+h1{
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  background: linear-gradient(90deg, #FFFFFF, var(--blue-1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle{
+  color: var(--text-mute);
+  font-size: 14.5px;
+  margin-bottom: 28px;
+}
+
+/* ============================================================
+   SEARCH CONSOLE
+   ============================================================ */
+.search-row{
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.search-box{
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  gap: 10px;
+}
+
+input[type="text"]{
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]::placeholder{ color: var(--text-mute); }
+
+input[type="text"]:focus{
+  outline: none;
+  border-color: var(--blue-1);
+  box-shadow: 0 0 0 3px rgba(89,166,255,0.15);
+}
+
+button{
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 13px 26px;
+  background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+button:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,84,240,0.35);
+}
+
+button:focus-visible{
+  outline: 2px solid var(--blue-1);
+  outline-offset: 2px;
+}
+
+button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:none; }
+
+.quick-filters{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qf-btn{
+  background: transparent;
+  color: var(--text-mute);
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.qf-btn:hover{
+  color: var(--text);
+  border-color: var(--blue-1);
+  transform: none;
+  box-shadow: none;
+}
+
+.qf-btn.active{
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+  border-color: transparent;
+}
+
+/* ============================================================
+   LOADING OVERLAY — progress readout while fetching the user's data
+   ============================================================ */
+.loading-overlay{
+  display: none;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.35s ease-out;
+}
+
+.loading-overlay.show{ display: block; }
+
+.loading-top{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+  font-family: var(--mono);
+}
+
+.loading-label{ font-size: 13px; color: var(--text-mute); }
+.loading-pct{ font-size: 22px; font-weight: 700; color: var(--blue-1); }
+
+.progress-track{
+  height: 6px;
+  background: var(--panel-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill{
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue-2), var(--blue-1));
+  transition: width 0.25s ease-out;
+}
+
+/* ============================================================
+   STATUS MESSAGES
+   ============================================================ */
+.status-line{
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: none;
+  border: 1px solid var(--line);
+  animation: fadeUp 0.3s ease-out;
+}
+
+.status-line.show{ display: block; }
+.status-line.info{ color: var(--blue-1); border-color: rgba(89,166,255,0.3); background: rgba(89,166,255,0.06); }
+.status-line.warn{ color: var(--avg); border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.06); }
+.status-line.error{ color: var(--poor); border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.06); }
+.status-line.empty{ color: var(--text-mute); }
+
+/* ============================================================
+   TASK COUNT READOUT
+   ============================================================ */
+.readout{
+  display: none;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--mono);
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue-1);
+  background: var(--panel);
+  border-radius: 8px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.4s ease-out;
+}
+
+.readout.show{ display: flex; }
+
+.readout .num{ font-size: 30px; font-weight: 700; color: var(--blue-1); }
+.readout .label{ color: var(--text-mute); font-size: 13px; }
+
+/* ============================================================
+   STATS GRID
+   ============================================================ */
+.section-label{
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+  margin: 32px 0 18px;
+}
+
+.stats-grid, .results-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.tile{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px 24px;
+  animation: rise 0.45s ease-out backwards;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tile:hover{
+  transform: translateY(-4px);
+  border-color: rgba(89,166,255,0.35);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+}
+
+@keyframes rise{
+  from{ opacity:0; transform: translateY(10px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .tile, .wrap, .status-line, .readout, .loading-overlay{ animation: none; }
+  .tile:hover{ transform: none; }
+}
+
+.tile-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.tile-title{
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.tile-count{
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  white-space: nowrap;
+  padding-top: 3px;
+}
+
+.tile-meta{
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text-mute);
+  margin-bottom: 4px;
+  display:flex;
+  justify-content: space-between;
+}
+
+.tile-meta span:last-child{ color: var(--text); }
+
+.metric-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border-radius: 6px;
+  margin-top: 8px;
+  border-left: 3px solid var(--line);
+}
+
+.metric-row .m-label{ font-size: 13px; color: var(--text-mute); }
+.metric-row .m-val{ font-family: var(--mono); font-size: 18px; font-weight: 700; }
+
+.metric-row.good{ border-left-color: var(--good); }
+.metric-row.good .m-val{ color: var(--good); }
+.metric-row.average{ border-left-color: var(--avg); }
+.metric-row.average .m-val{ color: var(--avg); }
+.metric-row.poor{ border-left-color: var(--poor); }
+.metric-row.poor .m-val{ color: var(--poor); }
+
+@media (max-width: 640px){
+  .wrap{ padding: 28px 16px 60px; }
+  .console-header{ padding: 24px 20px; }
+  .search-box{ flex-direction: column; }
+  .brand-row img{ height: 32px; }
+}
+</style>
+</head>
+<body>
+
+<div class="blade-field"></div>
+
+<div class="wrap">
+
+  <div class="console-header">
+    <div class="brand-row">
+      <img src="assets/logo.png" alt="Meti — Micro Engineering Tech Inc.">
+      <span class="brand-name">Quality Dashboard</span>
+    </div>
+    <h1>Meti Quality Dashboard</h1>
+    <div class="subtitle">Enter your email to pull your full task history from the Lidar sheet.</div>
+
+    <div class="search-row">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="you@example.com" autocomplete="off">
+        <button id="searchBtn" onclick="searchUser()">Search</button>
+      </div>
+    </div>
+
+    <div class="quick-filters" id="quickFilters" style="display:none;">
+      <button class="qf-btn" onclick="applyQuickFilter('yesterday', this)">Yesterday</button>
+      <button class="qf-btn" onclick="applyQuickFilter('last7', this)">Last 7 days</button>
+      <button class="qf-btn" onclick="applyQuickFilter('last14', this)">Last 14 days</button>
+      <button class="qf-btn" onclick="applyQuickFilter('lastMonth', this)">Last 30 days</button>
+      <button class="qf-btn active" onclick="applyQuickFilter('allTime', this)">All time</button>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-top">
+      <span class="loading-label" id="loadingLabel">Fetching your data…</span>
+      <span class="loading-pct" id="loadingPct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="status-line" id="statusInfo">Enter your email above and hit Search to load your data.</div>
+  <div class="status-line error" id="statusError"></div>
+  <div class="status-line empty" id="statusEmpty">No tasks found for this email.</div>
+  <div class="status-line warn" id="statusNoData">No tasks in the selected time period. Try a wider range.</div>
+
+  <div class="readout" id="taskReadout">
+    <span class="num" id="taskNum">0</span>
+    <span class="label" id="taskLabel">tasks found</span>
+  </div>
+
+  <div id="statsSection" style="display:none;">
+    <div class="section-label">Campaign averages</div>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <div id="resultsSection" style="display:none;">
+    <div class="section-label">Task history</div>
+    <div class="results-grid" id="resultsGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+// CONFIG — paste your deployed Apps Script Web App URL here
+// ================================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbzks4-Aw1vSk-Zt4P-qzsMFwFCocMIfXRKimMwuz_LVHG6ZyIgLrdeGyabhsR9qvkuAmA/exec'; // ينتهي بـ /exec
+
+let allResults = [];
+let hasSearched = false;
+let progressTimer = null;
+const MAX_CARDS = 120;
+
+function startProgress(){
+  const overlay = document.getElementById('loadingOverlay');
+  const fill = document.getElementById('progressFill');
+  const pct = document.getElementById('loadingPct');
+
+  overlay.classList.add('show');
+  fill.style.width = '0%';
+  pct.textContent = '0%';
+
+  let current = 0;
+  clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    // بيتقدم بسرعة الأول وبعدين بيهدى - بيوصل لحد 90% لغاية ما البيانات توصل فعلاً
+    const step = current < 50 ? 6 : current < 80 ? 2.5 : 0.6;
+    current = Math.min(current + step, 90);
+    fill.style.width = current + '%';
+    pct.textContent = Math.round(current) + '%';
+  }, 120);
+}
+
+function finishProgress(){
+  clearInterval(progressTimer);
+  const fill = document.getElementById('progressFill');
+  const pct = document.getElementById('loadingPct');
+  fill.style.width = '100%';
+  pct.textContent = '100%';
+  setTimeout(() => {
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }, 350);
+}
+
+function searchUser(){
+  const email = document.getElementById('searchInput').value.trim();
+  const btn = document.getElementById('searchBtn');
+
+  if (!email){
+    showStatus('statusError', 'Please enter an email to search.');
+    return;
+  }
+
+  hideAllStatus();
+  clearSections();
+  btn.disabled = true;
+  btn.textContent = 'Searching…';
+  startProgress();
+
+  fetch(API_URL + '?email=' + encodeURIComponent(email))
+    .then(r => r.json())
+    .then(data => {
+      finishProgress();
+      btn.disabled = false;
+      btn.textContent = 'Search';
+
+      if (data && data.error){
+        showStatus('statusError', 'Error: ' + data.message);
+        return;
+      }
+
+      allResults = Array.isArray(data) ? data : [];
+      hasSearched = true;
+
+      if (allResults.length === 0){
+        showStatus('statusEmpty');
+        document.getElementById('quickFilters').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('quickFilters').style.display = 'flex';
+      document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.qf-btn[onclick*="allTime"]').classList.add('active');
+      applyQuickFilter('allTime', null);
+    })
+    .catch(err => {
+      finishProgress();
+      btn.disabled = false;
+      btn.textContent = 'Search';
+      showStatus('statusError', 'Network error: ' + err.message);
+    });
+}
+
+function applyQuickFilter(type, clickedBtn){
+  if (clickedBtn){
+    document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+    clickedBtn.classList.add('active');
+  }
+
+  if (!hasSearched) return;
+  hideAllStatus();
+
+  let filtered = allResults;
+
+  if (type !== 'allTime'){
+    const today = new Date(); today.setHours(0,0,0,0);
+    let daysBack = type === 'yesterday' ? 1 : type === 'last7' ? 7 : type === 'last14' ? 14 : 30;
+    const start = new Date(today); start.setDate(today.getDate() - daysBack);
+
+    filtered = allResults.filter(r => {
+      const d = new Date(r.dateRaw);
+      if (type === 'yesterday'){
+        const y = new Date(today); y.setDate(today.getDate() - 1);
+        return r.dateRaw === y.toISOString().split('T')[0];
+      }
+      return d >= start && d <= today;
+    });
+  }
+
+  if (filtered.length === 0){
+    showStatus('statusNoData');
+    clearSections();
+    return;
+  }
+
+  renderReadout(filtered.length, type);
+  renderStats(filtered);
+  renderResults(filtered);
+}
+
+function getColorClass(v){
+  if (v >= 99) return 'good';
+  if (v >= 90) return 'average';
+  return 'poor';
+}
+
+function renderReadout(count, type){
+  const labelMap = { yesterday:'yesterday', last7:'last 7 days', last14:'last 14 days', lastMonth:'last 30 days', allTime:'all time' };
+  document.getElementById('taskNum').textContent = count;
+  document.getElementById('taskLabel').textContent = 'tasks · ' + (labelMap[type] || 'all time');
+  document.getElementById('taskReadout').classList.add('show');
+}
+
+function renderStats(results){
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = '';
+  document.getElementById('statsSection').style.display = 'block';
+
+  const byCampaign = {};
+  results.forEach(r => {
+    if (!byCampaign[r.campaign]) byCampaign[r.campaign] = { count:0, a:0, b:0, t:0 };
+    const s = byCampaign[r.campaign];
+    s.count++; s.a += r.artifacts; s.b += r.attribute; s.t += r.totalAccuracy;
+  });
+
+  Object.keys(byCampaign).sort().forEach((camp, i) => {
+    const s = byCampaign[camp];
+    const avgA = (s.a / s.count).toFixed(2);
+    const avgB = (s.b / s.count).toFixed(2);
+    const avgT = (s.t / s.count).toFixed(2);
+
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.style.animationDelay = (i * 0.05) + 's';
+    tile.innerHTML = `
+      <div class="tile-head">
+        <div class="tile-title">${escapeHtml(camp)}</div>
+        <div class="tile-count">${s.count} tasks</div>
+      </div>
+      <div class="metric-row ${getColorClass(avgA)}"><span class="m-label">Artifacts</span><span class="m-val">${avgA}%</span></div>
+      <div class="metric-row ${getColorClass(avgB)}"><span class="m-label">Attribute</span><span class="m-val">${avgB}%</span></div>
+      <div class="metric-row ${getColorClass(avgT)}"><span class="m-label">Total Accuracy</span><span class="m-val">${avgT}%</span></div>
+    `;
+    grid.appendChild(tile);
+  });
+}
+
+function renderResults(results){
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+  document.getElementById('resultsSection').style.display = 'block';
+
+  const capped = results.slice(0, MAX_CARDS);
+
+  capped.forEach((r, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.style.animationDelay = (i * 0.03) + 's';
+    tile.innerHTML = `
+      <div class="tile-head">
+        <div class="tile-title">${escapeHtml(r.campaign)}</div>
+        <div class="tile-count">#${escapeHtml(String(r.actualId))}</div>
+      </div>
+      <div class="tile-meta"><span>Submitted</span><span>${escapeHtml(r.date)}</span></div>
+      <div class="metric-row ${getColorClass(r.artifacts)}"><span class="m-label">Artifacts</span><span class="m-val">${r.artifacts}%</span></div>
+      <div class="metric-row ${getColorClass(r.attribute)}"><span class="m-label">Attribute</span><span class="m-val">${r.attribute}%</span></div>
+      <div class="metric-row ${getColorClass(r.totalAccuracy)}"><span class="m-label">Total Accuracy</span><span class="m-val">${r.totalAccuracy}%</span></div>
+    `;
+    grid.appendChild(tile);
+  });
+
+  if (results.length > MAX_CARDS){
+    showStatus('statusInfo', `Showing ${MAX_CARDS} of ${results.length} tasks. Narrow the time range to see the rest.`);
+    document.getElementById('statusInfo').classList.add('show');
+    document.getElementById('statusInfo').classList.remove('empty');
+  }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showStatus(id, msg){
+  hideAllStatus();
+  const el = document.getElementById(id);
+  if (msg !== undefined) el.textContent = msg;
+  el.classList.add('show');
+}
+
+function hideAllStatus(){
+  ['statusInfo','statusError','statusEmpty','statusNoData'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+}
+
+function clearSections(){
+  document.getElementById('statsSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('taskReadout').classList.remove('show');
+  document.getElementById('statsGrid').innerHTML = '';
+  document.getElementById('resultsGrid').innerHTML = '';
+}
+
+document.getElementById('searchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') searchUser();
+});
+</script>
+</body>
+</html>
