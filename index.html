@@ -99,8 +99,9 @@ body{
 .brand-row{
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   margin-bottom: 22px;
+  flex-wrap: wrap;
 }
 
 .brand-row img{
@@ -110,20 +111,48 @@ body{
 }
 
 .brand-name{
+  position: relative;
+  overflow: hidden;
   font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--text-mute);
-  border-left: 1px solid var(--line);
-  padding-left: 16px;
+  color: #EAF2FF;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--blue-2), var(--blue-1));
+  box-shadow: 0 0 0 1px rgba(89,166,255,0.35), 0 6px 22px rgba(37,84,240,0.4), 0 0 34px rgba(89,166,255,0.25);
+  transition: transform 0.35s cubic-bezier(.22,1,.36,1), box-shadow 0.35s ease;
+}
+
+.brand-name::before{
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+  animation: shimmer 3.2s ease-in-out infinite;
+}
+
+@keyframes shimmer{
+  0%   { left: -60%; }
+  55%  { left: 130%; }
+  100% { left: 130%; }
+}
+
+.brand-name:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(89,166,255,0.5), 0 10px 28px rgba(37,84,240,0.55), 0 0 46px rgba(89,166,255,0.4);
 }
 
 h1{
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
   font-weight: 800;
-  letter-spacing: -0.01em;
-  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 10px;
   background: linear-gradient(90deg, #FFFFFF, var(--blue-1));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -132,7 +161,7 @@ h1{
 
 .subtitle{
   color: var(--text-mute);
-  font-size: 14.5px;
+  font-size: 16px;
   margin-bottom: 28px;
 }
 
@@ -303,40 +332,113 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 .status-line.empty{ color: var(--text-mute); }
 
 /* ============================================================
-   TASK COUNT READOUT
+   TOTAL TASKS — premium centered glassmorphism KPI widget
    ============================================================ */
 .readout{
   display: none;
-  align-items: baseline;
-  gap: 14px;
-  font-family: var(--mono);
-  padding: 20px 24px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--blue-1);
-  background: var(--panel);
-  border-radius: 8px;
-  margin-bottom: 28px;
-  animation: fadeUp 0.4s ease-out;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 46px 36px 40px;
+  margin: 4px 0 40px;
+  border-radius: 20px;
+  position: relative;
+  background: rgba(19,26,43,0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(89,166,255,0.22);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 0 60px rgba(37,84,240,0.15);
+  transition: transform 0.4s cubic-bezier(.22,1,.36,1), box-shadow 0.4s ease;
+  overflow: hidden;
 }
 
 .readout.show{ display: flex; }
 
-.readout .num{ font-size: 30px; font-weight: 700; color: var(--blue-1); }
-.readout .label{ color: var(--text-mute); font-size: 13px; }
+.readout:hover{
+  transform: translateY(-6px);
+  box-shadow: 0 28px 74px rgba(0,0,0,0.4), 0 0 84px rgba(37,84,240,0.28);
+}
+
+.readout::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: conic-gradient(from 0deg, var(--blue-1), var(--good), var(--blue-2), var(--blue-1));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spinBorder 7s linear infinite;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+@keyframes spinBorder{ to{ transform: rotate(360deg); } }
+
+.readout-icon{
+  font-size: 26px;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 0 10px rgba(89,166,255,0.5));
+}
+
+.readout .num{
+  font-family: var(--sans);
+  font-size: clamp(48px, 8vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(90deg, var(--blue-1), #ffffff, var(--blue-1));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shine 3.5s linear infinite;
+  text-shadow: 0 0 40px rgba(89,166,255,0.25);
+}
+
+@keyframes shine{ to{ background-position: -200% center; } }
+
+.readout .label{
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-mute);
+  margin-top: 6px;
+}
 
 /* ============================================================
    STATS GRID
    ============================================================ */
 .section-label{
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-mute);
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 10px;
-  margin: 32px 0 18px;
+  font-family: var(--sans);
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  display: inline-block;
+  position: relative;
+  padding-bottom: 14px;
+  margin: 52px 0 24px;
 }
+
+.section-label::after{
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue-1), var(--blue-2));
+  box-shadow: 0 0 12px rgba(89,166,255,0.6);
+  animation: underlineGrow 0.8s ease-out forwards, underlinePulse 2.6s ease-in-out infinite 0.8s;
+}
+
+@keyframes underlineGrow{ from{ width: 0; } to{ width: 72px; } }
+@keyframes underlinePulse{ 0%, 100%{ opacity: 1; } 50%{ opacity: 0.5; } }
 
 .stats-grid, .results-grid{
   display: grid;
@@ -348,15 +450,15 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 22px 24px;
+  padding: 24px 26px;
   animation: rise 0.45s ease-out backwards;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.35s cubic-bezier(.22,1,.36,1), border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 .tile:hover{
-  transform: translateY(-4px);
-  border-color: rgba(89,166,255,0.35);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+  transform: translateY(-5px);
+  border-color: rgba(89,166,255,0.4);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 34px rgba(37,84,240,0.18);
 }
 
 @keyframes rise{
@@ -367,30 +469,51 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 @media (prefers-reduced-motion: reduce){
   .tile, .wrap, .status-line, .readout, .loading-overlay{ animation: none; }
   .tile:hover{ transform: none; }
+  .brand-name::before, .readout::before, .readout .num, .section-label::after{ animation: none; }
 }
 
 .tile-head{
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 14px;
-  margin-bottom: 16px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
 }
 
 .tile-title{
-  font-size: 14.5px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   line-height: 1.4;
 }
 
 .tile-count{
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
   white-space: nowrap;
-  padding-top: 3px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+  box-shadow: 0 0 0 1px rgba(89,166,255,0.4), 0 6px 20px rgba(37,84,240,0.45), 0 0 30px rgba(89,166,255,0.25);
+  transition: transform 0.35s cubic-bezier(.22,1,.36,1), box-shadow 0.35s ease;
+}
+
+.tile-count::before{
+  content: '📋';
+  font-size: 15px;
+  line-height: 1;
+}
+
+.tile-count:hover{
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 0 1px rgba(89,166,255,0.6), 0 10px 28px rgba(37,84,240,0.6), 0 0 46px rgba(89,166,255,0.4);
 }
 
 .tile-meta{
@@ -418,28 +541,29 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
   gap: 6px;
   color: var(--text-mute);
   font-weight: 500;
+  font-size: 14px;
 }
 
 .info-row .info-value{
   color: var(--text);
   font-weight: 700;
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .metric-row{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 13px 16px;
   background: var(--panel-2);
   border-radius: 6px;
   margin-top: 8px;
   border-left: 3px solid var(--line);
 }
 
-.metric-row .m-label{ font-size: 13px; color: var(--text-mute); }
-.metric-row .m-val{ font-family: var(--mono); font-size: 18px; font-weight: 700; }
+.metric-row .m-label{ font-size: 14px; color: var(--text-mute); }
+.metric-row .m-val{ font-family: var(--mono); font-size: 19px; font-weight: 700; }
 
 .metric-row.good{ border-left-color: var(--good); }
 .metric-row.good .m-val{ color: var(--good); }
@@ -474,7 +598,7 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 
   <div class="console-header">
     <div class="brand-row">
-      <img src="assets/logo.png" alt="Meti — Micro Engineering Tech Inc.">
+      <img src="./logo.png" alt="Meti — Micro Engineering Tech Inc.">
       <span class="brand-name">Quality Dashboard</span>
     </div>
     <h1>Meti Quality Dashboard</h1>
@@ -502,6 +626,7 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
   <div class="status-line warn" id="statusNoData">No tasks in the selected time period. Try a wider range.</div>
 
   <div class="readout" id="taskReadout">
+    <div class="readout-icon">📊</div>
     <span class="num" id="taskNum">0</span>
     <span class="label" id="taskLabel">tasks found</span>
   </div>
@@ -652,10 +777,28 @@ function getColorClass(v){
   return 'poor';
 }
 
+function animateCount(el, target, duration){
+  duration = duration || 700;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced){
+    el.textContent = target;
+    return;
+  }
+  const startTime = performance.now();
+  function tick(now){
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(tick);
+}
+
 function renderReadout(count, type){
-  const labelMap = { yesterday:'yesterday', last7:'last 7 days', last14:'last 14 days', lastMonth:'last 30 days', allTime:'all time' };
-  document.getElementById('taskNum').textContent = count;
-  document.getElementById('taskLabel').textContent = 'tasks · ' + (labelMap[type] || 'all time');
+  const labelMap = { yesterday:'Tasks • Yesterday', last7:'Tasks • Last 7 Days', last14:'Tasks • Last 14 Days', lastMonth:'Tasks • Last 30 Days', allTime:'Tasks • All Time' };
+  animateCount(document.getElementById('taskNum'), count);
+  document.getElementById('taskLabel').textContent = labelMap[type] || 'Tasks • All Time';
   document.getElementById('taskReadout').classList.add('show');
 }
 
