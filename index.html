@@ -229,19 +229,32 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 }
 
 /* ============================================================
-   LOADING OVERLAY — progress readout while fetching the user's data
+   LOADING OVERLAY — fixed full-screen, blurs everything behind it
    ============================================================ */
 .loading-overlay{
   display: none;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  border-radius: 10px;
-  padding: 28px 32px;
-  margin-bottom: 24px;
-  animation: fadeUp 0.35s ease-out;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  background: rgba(10,14,24,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.loading-overlay.show{ display: block; }
+.loading-overlay.show{ display: flex; }
+
+.loading-card{
+  width: min(460px, 90vw);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 28px 32px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  animation: fadeUp 0.35s ease-out;
+}
 
 .loading-top{
   display: flex;
@@ -391,6 +404,29 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 
 .tile-meta span:last-child{ color: var(--text); }
 
+.info-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.info-row .info-label{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mute);
+  font-weight: 500;
+}
+
+.info-row .info-value{
+  color: var(--text);
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
 .metric-row{
   display: flex;
   justify-content: space-between;
@@ -422,6 +458,16 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 </head>
 <body>
 
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-card">
+    <div class="loading-top">
+      <span class="loading-label" id="loadingLabel">Fetching your data…</span>
+      <span class="loading-pct" id="loadingPct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</div>
+
 <div class="blade-field"></div>
 
 <div class="wrap">
@@ -436,7 +482,7 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 
     <div class="search-row">
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="you@example.com" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="me123456@meti.ai" autocomplete="off">
         <button id="searchBtn" onclick="searchUser()">Search</button>
       </div>
     </div>
@@ -450,14 +496,6 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
     </div>
   </div>
 
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-top">
-      <span class="loading-label" id="loadingLabel">Fetching your data…</span>
-      <span class="loading-pct" id="loadingPct">0%</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-  </div>
-
   <div class="status-line" id="statusInfo">Enter your email above and hit Search to load your data.</div>
   <div class="status-line error" id="statusError"></div>
   <div class="status-line empty" id="statusEmpty">No tasks found for this email.</div>
@@ -468,14 +506,14 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
     <span class="label" id="taskLabel">tasks found</span>
   </div>
 
-  <div id="statsSection" style="display:none;">
-    <div class="section-label">Campaign averages</div>
-    <div class="stats-grid" id="statsGrid"></div>
+  <div id="resultsSection" style="display:none;">
+    <div class="section-label">🗂️ Task History</div>
+    <div class="results-grid" id="resultsGrid"></div>
   </div>
 
-  <div id="resultsSection" style="display:none;">
-    <div class="section-label">Task history</div>
-    <div class="results-grid" id="resultsGrid"></div>
+  <div id="statsSection" style="display:none;">
+    <div class="section-label">📊 Campaign Statistics</div>
+    <div class="stats-grid" id="statsGrid"></div>
   </div>
 
 </div>
@@ -484,7 +522,7 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 // ================================================================
 // CONFIG — paste your deployed Apps Script Web App URL here
 // ================================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzks4-Aw1vSk-Zt4P-qzsMFwFCocMIfXRKimMwuz_LVHG6ZyIgLrdeGyabhsR9qvkuAmA/exec'; // ينتهي بـ /exec
+const API_URL = 'PASTE_YOUR_WEB_APP_URL_HERE'; // ينتهي بـ /exec
 
 let allResults = [];
 let hasSearched = false;
@@ -668,10 +706,10 @@ function renderResults(results){
     tile.style.animationDelay = (i * 0.03) + 's';
     tile.innerHTML = `
       <div class="tile-head">
-        <div class="tile-title">${escapeHtml(r.campaign)}</div>
-        <div class="tile-count">#${escapeHtml(String(r.actualId))}</div>
+        <div class="tile-title">📋 ${escapeHtml(r.campaign)}</div>
       </div>
-      <div class="tile-meta"><span>Submitted</span><span>${escapeHtml(r.date)}</span></div>
+      <div class="info-row"><span class="info-label">🆔 Task ID:</span><span class="info-value">${escapeHtml(String(r.actualId))}</span></div>
+      <div class="info-row"><span class="info-label">📅 Submitted Date:</span><span class="info-value">${escapeHtml(r.date)}</span></div>
       <div class="metric-row ${getColorClass(r.artifacts)}"><span class="m-label">Artifacts</span><span class="m-val">${r.artifacts}%</span></div>
       <div class="metric-row ${getColorClass(r.attribute)}"><span class="m-label">Attribute</span><span class="m-val">${r.attribute}%</span></div>
       <div class="metric-row ${getColorClass(r.totalAccuracy)}"><span class="m-label">Total Accuracy</span><span class="m-val">${r.totalAccuracy}%</span></div>
