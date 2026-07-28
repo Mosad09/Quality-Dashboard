@@ -276,10 +276,8 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 
 .custom-popup{
   display: none;
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  z-index: 50;
+  position: fixed;
+  z-index: 500;
   width: min(260px, 78vw);
   background: var(--panel);
   border: 1px solid var(--line);
@@ -907,7 +905,21 @@ function applyQuickFilter(type, clickedBtn){
 
 function toggleCustomPopup(e){
   e.stopPropagation();
-  document.getElementById('customPopup').classList.toggle('show');
+  const popup = document.getElementById('customPopup');
+  const isShowing = popup.classList.contains('show');
+  if (isShowing){
+    popup.classList.remove('show');
+    return;
+  }
+  const btnRect = e.currentTarget.getBoundingClientRect();
+  const popupWidth = Math.min(260, window.innerWidth * 0.78);
+  let left = btnRect.left;
+  if (left + popupWidth > window.innerWidth - 12){
+    left = window.innerWidth - popupWidth - 12;
+  }
+  popup.style.top = (btnRect.bottom + 10) + 'px';
+  popup.style.left = Math.max(12, left) + 'px';
+  popup.classList.add('show');
 }
 
 document.addEventListener('click', (e) => {
