@@ -659,13 +659,28 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
       </div>
     </div>
 
-    <div class="quick-filters" id="quickFilters" style="display:none;">
-      <button class="qf-btn" onclick="applyQuickFilter('yesterday', this)">Yesterday</button>
-      <button class="qf-btn" onclick="applyQuickFilter('last7', this)">Last 7 days</button>
-      <button class="qf-btn" onclick="applyQuickFilter('last14', this)">Last 14 days</button>
-      <button class="qf-btn" onclick="applyQuickFilter('lastMonth', this)">Last 30 days</button>
-      <button class="qf-btn active" onclick="applyQuickFilter('allTime', this)">All time</button>
+<div class="quick-filters">
+  <button class="quick-filter-btn" onclick="applyQuickFilter('yesterday', this)"> Yesterday</button>
+  <button class="quick-filter-btn" onclick="applyQuickFilter('last7', this)">📅 Last 7 days</button>
+  <button class="quick-filter-btn" onclick="applyQuickFilter('last14', this)">📅 Last 14 days</button>
+  <button class="quick-filter-btn" onclick="applyQuickFilter('lastMonth', this)">📅 Last 30 days</button>
+  <button class="quick-filter-btn" onclick="applyQuickFilter('allTime', this)">📅 All time</button>
+  <div class="custom-date-filter" id="customDateFilter">
+    <input type="date" id="customStartDate" title="Start Date">
+    <span class="date-separator">→</span>
+    <input type="date" id="customEndDate" title="End Date">
+    <button class="apply-custom-btn" onclick="applyCustomDateRange()">Apply</button>
+    <button class="clear-custom-btn" onclick="clearCustomDateRange()">✕</button>
+  </div>
+</div>
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-top">
+      <span class="loading-label" id="loadingLabel">Fetching your data…</span>
+      <span class="loading-pct" id="loadingPct">0%</span>
     </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
   </div>
 
   <div class="status-line" id="statusInfo">Enter your email above and hit Search to load your data.</div>
