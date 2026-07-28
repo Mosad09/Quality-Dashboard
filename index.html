@@ -270,6 +270,77 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
 }
 
 /* ============================================================
+   CUSTOM RANGE — small popover under the "Custom" quick filter
+   ============================================================ */
+.custom-filter-wrap{ position: relative; }
+
+.custom-popup{
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 50;
+  width: min(260px, 78vw);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+  animation: fadeUp 0.25s ease-out;
+}
+
+.custom-popup.show{ display: block; }
+
+.custom-popup-field{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.custom-popup-field label{
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.custom-popup-field input[type="date"]{
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color-scheme: dark;
+}
+
+.custom-popup-field input[type="date"]:focus{
+  outline: none;
+  border-color: var(--blue-1);
+  box-shadow: 0 0 0 3px rgba(89,166,255,0.15);
+}
+
+.custom-popup-apply{
+  width: 100%;
+  padding: 10px;
+  min-height: 38px;
+  font-size: 12.5px;
+}
+
+.custom-popup-error{
+  display: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--poor);
+  margin: -6px 0 12px;
+}
+
+.custom-popup-error.show{ display: block; }
+
+/* ============================================================
    LOADING OVERLAY — fixed full-screen, blurs everything behind it
    ============================================================ */
 .loading-overlay{
@@ -277,9 +348,8 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
   position: fixed;
   inset: 0;
   z-index: 100;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 12vh;
   background: rgba(10,14,24,0.55);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -381,6 +451,7 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
   padding: 1px;
   background: conic-gradient(from 0deg, var(--blue-1), var(--good), var(--blue-2), var(--blue-1));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   animation: spinBorder 7s linear infinite;
@@ -659,28 +730,28 @@ button:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:n
       </div>
     </div>
 
-<div class="quick-filters">
-  <button class="quick-filter-btn" onclick="applyQuickFilter('yesterday', this)"> Yesterday</button>
-  <button class="quick-filter-btn" onclick="applyQuickFilter('last7', this)">📅 Last 7 days</button>
-  <button class="quick-filter-btn" onclick="applyQuickFilter('last14', this)">📅 Last 14 days</button>
-  <button class="quick-filter-btn" onclick="applyQuickFilter('lastMonth', this)">📅 Last 30 days</button>
-  <button class="quick-filter-btn" onclick="applyQuickFilter('allTime', this)">📅 All time</button>
-  <div class="custom-date-filter" id="customDateFilter">
-    <input type="date" id="customStartDate" title="Start Date">
-    <span class="date-separator">→</span>
-    <input type="date" id="customEndDate" title="End Date">
-    <button class="apply-custom-btn" onclick="applyCustomDateRange()">Apply</button>
-    <button class="clear-custom-btn" onclick="clearCustomDateRange()">✕</button>
-  </div>
-</div>
-  </div>
-
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-top">
-      <span class="loading-label" id="loadingLabel">Fetching your data…</span>
-      <span class="loading-pct" id="loadingPct">0%</span>
+    <div class="quick-filters" id="quickFilters" style="display:none;">
+      <button class="qf-btn" onclick="applyQuickFilter('yesterday', this)">Yesterday</button>
+      <button class="qf-btn" onclick="applyQuickFilter('last7', this)">Last 7 days</button>
+      <button class="qf-btn" onclick="applyQuickFilter('last14', this)">Last 14 days</button>
+      <button class="qf-btn" onclick="applyQuickFilter('lastMonth', this)">Last 30 days</button>
+      <button class="qf-btn active" onclick="applyQuickFilter('allTime', this)">All time</button>
+      <div class="custom-filter-wrap">
+        <button class="qf-btn" onclick="toggleCustomPopup(event)">Custom</button>
+        <div class="custom-popup" id="customPopup">
+          <div class="custom-popup-field">
+            <label for="customStart">From</label>
+            <input type="date" id="customStart">
+          </div>
+          <div class="custom-popup-field">
+            <label for="customEnd">To</label>
+            <input type="date" id="customEnd">
+          </div>
+          <div class="custom-popup-error" id="customPopupError"></div>
+          <button class="custom-popup-apply" onclick="applyCustomRange()">Apply</button>
+        </div>
+      </div>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
   </div>
 
   <div class="status-line" id="statusInfo">Enter your email above and hit Search to load your data.</div>
@@ -832,6 +903,62 @@ function applyQuickFilter(type, clickedBtn){
   renderReadout(filtered.length, type);
   renderStats(filtered);
   renderResults(filtered);
+}
+
+function toggleCustomPopup(e){
+  e.stopPropagation();
+  document.getElementById('customPopup').classList.toggle('show');
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.custom-filter-wrap');
+  if (wrap && !wrap.contains(e.target)){
+    document.getElementById('customPopup').classList.remove('show');
+  }
+});
+
+function applyCustomRange(){
+  const startVal = document.getElementById('customStart').value;
+  const endVal = document.getElementById('customEnd').value;
+  const errEl = document.getElementById('customPopupError');
+
+  if (!startVal || !endVal){
+    errEl.textContent = 'Pick both a start and end date.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (startVal > endVal){
+    errEl.textContent = 'Start date must be before the end date.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.custom-filter-wrap .qf-btn').classList.add('active');
+  document.getElementById('customPopup').classList.remove('show');
+
+  if (!hasSearched) return;
+  hideAllStatus();
+
+  const filtered = allResults.filter(r => r.dateRaw >= startVal && r.dateRaw <= endVal);
+
+  if (filtered.length === 0){
+    showStatus('statusNoData');
+    clearSections();
+    return;
+  }
+
+  renderReadoutCustom(filtered.length, startVal, endVal);
+  renderStats(filtered);
+  renderResults(filtered);
+}
+
+function renderReadoutCustom(count, start, end){
+  animateCount(document.getElementById('taskNum'), count);
+  const fmt = (s) => new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('taskLabel').textContent = `Tasks • ${fmt(start)} – ${fmt(end)}`;
+  document.getElementById('taskReadout').classList.add('show');
 }
 
 function getColorClass(v){
